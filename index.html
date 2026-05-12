@@ -69,6 +69,8 @@ body {
 </head>
 <body>
 
+  <div id="dashboardView">
+
 <div class="max-w-6xl mx-auto p-5">
 
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-5 mb-8">
@@ -84,19 +86,44 @@ body {
 </div>
 </div>
 
-<div class="flex gap-3 flex-wrap">
+<div class="flex gap-3 items-center">
+
 <button id="installBtn" class="btn bg-pink-500 text-white hidden">
 Instalar app
 </button>
 
-<button onclick="exportBackup()" class="btn bg-slate-900 text-white">
+<div class="relative">
+
+<button onclick="toggleMenu()"
+class="w-14 h-14 rounded-2xl bg-slate-200 text-2xl">
+☰
+</button>
+
+<div id="menu"
+class="hidden absolute right-0 top-16 bg-white shadow-2xl rounded-3xl p-3 w-56 z-50 border border-slate-100">
+
+<button onclick="exportBackup()"
+class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 transition">
 Exportar backup
 </button>
 
-<label class="btn bg-slate-200 cursor-pointer">
+<label class="block w-full p-4 rounded-2xl hover:bg-slate-100 transition cursor-pointer">
 Importar backup
 <input type="file" hidden onchange="importBackup(event)">
 </label>
+
+<button onclick="showView('history')"
+class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 transition">
+Histórico
+</button>
+
+<button onclick="showView('dashboard')"
+class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 transition">
+Dashboard
+</button>
+
+</div>
+</div>
 </div>
 
 </div>
@@ -118,6 +145,41 @@ Importar backup
 <h2 id="totalRecords" class="text-4xl font-bold mt-4">0</h2>
 </div>
 
+</div>
+
+<div class="card mb-6">
+
+<div class="flex flex-col md:flex-row md:items-end gap-5">
+
+<div class="flex-1">
+<label>Meta de gastos</label>
+<input id="goalLimit" type="number" class="input"
+placeholder="Ex: 500">
+</div>
+
+<button onclick="saveGoal()"
+class="btn bg-pink-500 text-white">
+Salvar meta
+</button>
+
+</div>
+
+<div class="mt-6">
+
+<div class="flex justify-between text-sm text-slate-500 mb-2">
+<span>Controle de gastos</span>
+<span id="goalStatus">R$ 0 / R$ 0</span>
+</div>
+
+<div class="w-full h-8 bg-slate-100 rounded-full overflow-hidden">
+<div id="goalBar"
+class="h-full rounded-full flex items-center justify-center text-sm font-bold text-white transition-all"
+style="width:0%; background:#22c55e">
+0%
+</div>
+</div>
+
+</div>
 </div>
 
 <div class="grid lg:grid-cols-2 gap-6">
@@ -175,26 +237,110 @@ Registrar gasto
 </div>
 
 </div>
+</div>
 
-<div class="card mt-6">
+<div id="historyView" class="hidden max-w-6xl mx-auto p-5">
+
+<div class="card">
 <div class="flex items-center justify-between mb-6">
-<h2 class="text-2xl font-bold">Histórico</h2>
+<h2 class="text-3xl font-bold">Histórico</h2>
+
+<button onclick="showView('dashboard')"
+class="bg-pink-500 text-white px-5 py-3 rounded-2xl">
+Voltar
+</button>
 </div>
 
 <div id="history" class="space-y-4"></div>
+
+</div>
 </div>
 
 </div>
 
 <script>
 let expenses = JSON.parse(localStorage.getItem('jujubancas_expenses')) || [];
-let categories = JSON.parse(localStorage.getItem('jujubancas_categories')) || [
-  'Delivery',
-  'Doces',
-  'Compras impulsivas'
-];
+let categories = JSON.parse(localStorage.getItem('jujubancas_categories')) || ['Delivery','Doces'];
+
+let currentView = 'dashboard';
 
 let deferredPrompt;
+
+function toggleMenu(){
+
+document.getElementById('menu').classList.toggle('hidden');
+}
+
+function showView(view){
+
+currentView = view;
+
+if(view === 'history'){
+ document.getElementById('dashboardView').classList.add('hidden');
+ document.getElementById('historyView').classList.remove('hidden');
+}
+
+if(view === 'dashboard'){
+ document.getElementById('dashboardView').classList.remove('hidden');
+ document.getElementById('historyView').classList.add('hidden');
+}
+
+const menu = document.getElementById('menu');
+if(menu){
+ menu.classList.add('hidden');
+}
+}
+
+function saveGoal(){
+
+const value = Number(document.getElementById('goalLimit').value || 0);
+
+localStorage.setItem('jujubancas_goal', value);
+
+renderGoal();
+
+showToast('Meta salva');
+}
+
+function renderGoal(){
+
+const goal = Number(localStorage.getItem('jujubancas_goal') || 0);
+
+const total = expenses.reduce((sum,item)=>sum+item.value,0);
+
+const percent = goal > 0
+? Math.min((total/goal)*100,100)
+: 0;
+
+const bar = document.getElementById('goalBar');
+
+if(!bar) return;
+
+bar.style.width = percent + '%';
+bar.innerText = Math.floor(percent) + '%';
+
+if(percent < 70){
+ bar.style.background = '#22c55e';
+}
+
+if(percent >= 70 && percent < 100){
+ bar.style.background = '#f59e0b';
+}
+
+if(percent >= 100){
+ bar.style.background = '#ef4444';
+}
+
+const status = document.getElementById('goalStatus');
+
+status.innerText = `R$ ${total.toFixed(2)} / R$ ${goal.toFixed(2)}`;
+
+const input = document.getElementById('goalLimit');
+
+if(input){
+ input.value = goal || '';
+}
+}
 
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
@@ -523,10 +669,11 @@ function showToast(message) {
   }, 2200);
 }
 
-function renderAll() {
-  renderCategories();
-  renderHistory();
-  renderChart();
+function renderAll(){
+renderCategories();
+renderHistory();
+renderChart();
+renderGoal();
 }
 
 renderAll();
