@@ -218,22 +218,75 @@ function saveStorage() {
   localStorage.setItem('jujubancas_categories', JSON.stringify(categories));
 }
 
-function addCategory() {
-  const name = prompt('Nova categoria');
+function addCategory(){
 
-  if (!name) return;
+const action = prompt(
+`Digite:
+1 = Nova categoria
+2 = Editar categoria
+3 = Remover categoria`
+);
 
-  const clean = name.trim();
+if(action === '1'){
 
-  if (!clean) return;
+ const name = prompt('Nome da nova categoria');
 
-  if (!categories.includes(clean)) {
-    categories.push(clean);
-    saveStorage();
-    renderCategories();
+ if(!name) return;
+
+ if(!categories.includes(name)){
+  categories.push(name);
+  saveStorage();
+  renderCategories();
+ }
+
+ document.getElementById('category').value = name;
+ showToast('Categoria adicionada');
+}
+
+if(action === '2'){
+
+ const current = prompt('Qual categoria deseja editar?');
+
+ if(!current) return;
+
+ if(!categories.includes(current)){
+  showToast('Categoria não encontrada');
+  return;
+ }
+
+ const updated = prompt('Novo nome da categoria');
+
+ if(!updated) return;
+
+ categories = categories.map(cat =>
+  cat === current ? updated : cat
+ );
+
+ expenses.forEach(exp=>{
+  if(exp.category === current){
+   exp.category = updated;
   }
+ });
 
-  document.getElementById('category').value = clean;
+ saveStorage();
+ renderAll();
+
+ showToast('Categoria atualizada');
+}
+
+if(action === '3'){
+
+ const removeName = prompt('Qual categoria deseja remover?');
+
+ if(!removeName) return;
+
+ categories = categories.filter(cat => cat !== removeName);
+
+ saveStorage();
+ renderCategories();
+
+ showToast('Categoria removida');
+}
 }
 
 function renderCategories() {
@@ -246,22 +299,62 @@ function renderCategories() {
     .join('');
 }
 
-function saveExpense() {
-  const expense = {
-    id: Date.now(),
-    value: Number(document.getElementById('value').value || 0),
-    category: document.getElementById('category').value,
-    note: document.getElementById('note').value,
-    date: document.getElementById('date').value
-  };
+let editingExpenseId = null;
 
-  expenses.unshift(expense);
+function saveExpense(){
 
-  saveStorage();
-  renderAll();
-  clearFields();
+const expenseData = {
+id: editingExpenseId || Date.now(),
+value: Number(document.getElementById('value').value || 0),
+category: document.getElementById('category').value,
+note: document.getElementById('note').value,
+date: document.getElementById('date').value
+};
 
-  showToast('Gasto registrado');
+if(editingExpenseId){
+
+ expenses = expenses.map(exp =>
+  exp.id === editingExpenseId ? expenseData : exp
+ );
+
+ showToast('Registro atualizado');
+
+}else{
+
+ expenses.unshift(expenseData);
+
+ showToast('Gasto registrado');
+}
+
+editingExpenseId = null;
+
+saveStorage();
+renderAll();
+
+document.getElementById('value').value='';
+document.getElementById('note').value='';
+document.getElementById('date').value='';
+}
+
+function editExpense(id){
+
+const expense = expenses.find(exp => exp.id === id);
+
+if(!expense) return;
+
+editingExpenseId = id;
+
+document.getElementById('value').value = expense.value;
+document.getElementById('category').value = expense.category;
+document.getElementById('note').value = expense.note;
+document.getElementById('date').value = expense.date;
+
+window.scrollTo({
+ top: 0,
+ behavior: 'smooth'
+});
+
+showToast('Editando registro');
 }
 
 function clearFields() {
@@ -302,9 +395,19 @@ function renderHistory() {
           </p>
         </div>
 
-        <button onclick="deleteExpense(${exp.id})" class="bg-red-500 text-white w-12 h-12 rounded-2xl">
-          🗑
-        </button>
+       <div class="flex gap-3">
+
+<button onclick="editExpense(${exp.id})"
+class="text-slate-500 text-2xl">
+✎
+</button>
+
+<button onclick="deleteExpense(${exp.id})"
+class="text-slate-500 text-2xl">
+🗑
+</button>
+
+</div>
 
       </div>
 
