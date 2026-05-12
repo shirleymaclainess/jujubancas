@@ -86,21 +86,34 @@ body {
 </div>
 </div>
 
-<div class="flex gap-3 items-center">
+<div class="flex items-center gap-3 ml-auto">
 
-<button id="installBtn" class="btn bg-pink-500 text-white hidden">
-Instalar app
+<button id="installBtn"
+class="btn bg-pink-500 text-white hidden">
+Instalar
 </button>
 
 <div class="relative">
 
 <button onclick="toggleMenu()"
-class="w-14 h-14 rounded-2xl bg-slate-200 text-2xl">
+class="w-12 h-12 flex items-center justify-center rounded-2xl bg-pink-500 text-white text-2xl shadow-lg">
 ☰
 </button>
 
 <div id="menu"
-class="hidden absolute right-0 top-16 bg-white shadow-2xl rounded-3xl p-3 w-56 z-50 border border-slate-100">
+class="hidden absolute right-0 top-14 bg-white shadow-2xl rounded-3xl p-3 w-56 z-50 border border-slate-100">
+
+<button onclick="showView('dashboard')"
+class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 transition">
+Dashboard
+</button>
+
+<button onclick="showView('history')"
+class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 transition">
+Histórico
+</button>
+
+<hr class="my-2">
 
 <button onclick="exportBackup()"
 class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 transition">
@@ -112,18 +125,9 @@ Importar backup
 <input type="file" hidden onchange="importBackup(event)">
 </label>
 
-<button onclick="showView('history')"
-class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 transition">
-Histórico
-</button>
-
-<button onclick="showView('dashboard')"
-class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 transition">
-Dashboard
-</button>
-
 </div>
 </div>
+
 </div>
 
 </div>
