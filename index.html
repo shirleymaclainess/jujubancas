@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -12,8 +13,6 @@
 <title>Jujubanças</title>
 
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -69,44 +68,38 @@ body {
 </head>
 <body>
 
-  <div id="dashboardView">
-
 <div class="max-w-6xl mx-auto p-5">
 
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-5 mb-8">
+<div class="flex items-center justify-between mb-6 gap-4">
 
-<div class="flex items-center gap-4">
-<div class="w-16 h-16 rounded-3xl bg-pink-300 flex items-center justify-center text-3xl">
+<div class="flex items-center gap-4 min-w-0">
+
+<div class="w-14 h-14 rounded-3xl bg-pink-300 flex items-center justify-center text-3xl shrink-0">
 💸
 </div>
 
-<div>
-<h1 class="text-4xl font-bold">Jujubanças</h1>
-<p class="text-slate-500 mt-1">Controle dos pequenos gastos do dia a dia</p>
-</div>
+<h1 class="text-3xl md:text-4xl font-bold truncate">
+Jujubanças
+</h1>
+
 </div>
 
-<div class="flex items-center gap-3 ml-auto">
+<div class="flex items-center gap-3 shrink-0">
 
 <button id="installBtn"
-class="btn bg-pink-500 text-white hidden">
+class="btn bg-pink-500 text-white hidden px-5 py-3">
 Instalar
 </button>
 
 <div class="relative">
 
 <button onclick="toggleMenu()"
-class="w-12 h-12 flex items-center justify-center rounded-2xl bg-pink-500 text-white text-2xl shadow-lg">
+class="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-900 text-white text-2xl shadow-lg">
 ☰
 </button>
 
 <div id="menu"
 class="hidden absolute right-0 top-14 bg-white shadow-2xl rounded-3xl p-3 w-56 z-50 border border-slate-100">
-
-<button onclick="showView('dashboard')"
-class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 transition">
-Dashboard
-</button>
 
 <button onclick="showView('history')"
 class="w-full text-left p-4 rounded-2xl hover:bg-slate-100 transition">
@@ -132,6 +125,43 @@ Importar backup
 
 </div>
 
+<div class="flex gap-3 mb-6">
+
+<button onclick="showTab('info')"
+id="tab-info"
+class="bg-pink-500 text-white px-5 py-4 rounded-2xl font-semibold flex-1">
+Informações
+</button>
+
+<button onclick="showTab('goal')"
+id="tab-goal"
+class="bg-slate-200 text-slate-700 px-5 py-4 rounded-2xl font-semibold flex-1">
+Meta
+</button>
+
+</div>
+
+<div id="dashboardView">
+
+<div class="card mb-6">
+
+<div class="flex justify-between text-sm text-slate-500 mb-2">
+<span>Controle de gastos</span>
+<span id="goalStatus">R$ 0 / R$ 0</span>
+</div>
+
+<div class="w-full h-8 bg-slate-100 rounded-full overflow-hidden">
+<div id="goalBar"
+class="h-full rounded-full flex items-center justify-center text-sm font-bold text-white transition-all"
+style="width:0%; background:#22c55e">
+0%
+</div>
+</div>
+
+</div>
+
+<div id="infoTab">
+
 <div class="grid md:grid-cols-3 gap-5 mb-6">
 
 <div class="card">
@@ -149,41 +179,6 @@ Importar backup
 <h2 id="totalRecords" class="text-4xl font-bold mt-4">0</h2>
 </div>
 
-</div>
-
-<div class="card mb-6">
-
-<div class="flex flex-col md:flex-row md:items-end gap-5">
-
-<div class="flex-1">
-<label>Meta de gastos</label>
-<input id="goalLimit" type="number" class="input"
-placeholder="Ex: 500">
-</div>
-
-<button onclick="saveGoal()"
-class="btn bg-pink-500 text-white">
-Salvar meta
-</button>
-
-</div>
-
-<div class="mt-6">
-
-<div class="flex justify-between text-sm text-slate-500 mb-2">
-<span>Controle de gastos</span>
-<span id="goalStatus">R$ 0 / R$ 0</span>
-</div>
-
-<div class="w-full h-8 bg-slate-100 rounded-full overflow-hidden">
-<div id="goalBar"
-class="h-full rounded-full flex items-center justify-center text-sm font-bold text-white transition-all"
-style="width:0%; background:#22c55e">
-0%
-</div>
-</div>
-
-</div>
 </div>
 
 <div class="grid lg:grid-cols-2 gap-6">
@@ -241,9 +236,35 @@ Registrar gasto
 </div>
 
 </div>
+
 </div>
 
-<div id="historyView" class="hidden max-w-6xl mx-auto p-5">
+<div id="goalTab" class="hidden">
+
+<div class="card mb-6">
+
+<div class="flex flex-col md:flex-row md:items-end gap-5">
+
+<div class="flex-1">
+<label>Meta de gastos</label>
+<input id="goalLimit" type="number" class="input"
+placeholder="Ex: 500">
+</div>
+
+<button onclick="saveGoal()"
+class="btn bg-pink-500 text-white">
+Salvar meta
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div id="historyView" class="hidden mt-6">
 
 <div class="card">
 <div class="flex items-center justify-between mb-6">
@@ -265,19 +286,15 @@ Voltar
 <script>
 let expenses = JSON.parse(localStorage.getItem('jujubancas_expenses')) || [];
 let categories = JSON.parse(localStorage.getItem('jujubancas_categories')) || ['Delivery','Doces'];
-
 let currentView = 'dashboard';
-
 let deferredPrompt;
+let editingExpenseId = null;
 
 function toggleMenu(){
-
 document.getElementById('menu').classList.toggle('hidden');
 }
 
 function showView(view){
-
-currentView = view;
 
 if(view === 'history'){
  document.getElementById('dashboardView').classList.add('hidden');
@@ -295,21 +312,46 @@ if(menu){
 }
 }
 
+function showTab(tab){
+
+const infoTab = document.getElementById('infoTab');
+const goalTab = document.getElementById('goalTab');
+
+const infoBtn = document.getElementById('tab-info');
+const goalBtn = document.getElementById('tab-goal');
+
+infoTab.classList.add('hidden');
+goalTab.classList.add('hidden');
+
+infoBtn.classList.remove('bg-pink-500','text-white');
+goalBtn.classList.remove('bg-pink-500','text-white');
+
+infoBtn.classList.add('bg-slate-200','text-slate-700');
+goalBtn.classList.add('bg-slate-200','text-slate-700');
+
+if(tab === 'info'){
+ infoTab.classList.remove('hidden');
+ infoBtn.classList.remove('bg-slate-200','text-slate-700');
+ infoBtn.classList.add('bg-pink-500','text-white');
+}
+
+if(tab === 'goal'){
+ goalTab.classList.remove('hidden');
+ goalBtn.classList.remove('bg-slate-200','text-slate-700');
+ goalBtn.classList.add('bg-pink-500','text-white');
+}
+}
+
 function saveGoal(){
-
 const value = Number(document.getElementById('goalLimit').value || 0);
-
 localStorage.setItem('jujubancas_goal', value);
-
 renderGoal();
-
 showToast('Meta salva');
 }
 
 function renderGoal(){
 
 const goal = Number(localStorage.getItem('jujubancas_goal') || 0);
-
 const total = expenses.reduce((sum,item)=>sum+item.value,0);
 
 const percent = goal > 0
@@ -317,8 +359,6 @@ const percent = goal > 0
 : 0;
 
 const bar = document.getElementById('goalBar');
-
-if(!bar) return;
 
 bar.style.width = percent + '%';
 bar.innerText = Math.floor(percent) + '%';
@@ -336,11 +376,9 @@ if(percent >= 100){
 }
 
 const status = document.getElementById('goalStatus');
-
 status.innerText = `R$ ${total.toFixed(2)} / R$ ${goal.toFixed(2)}`;
 
 const input = document.getElementById('goalLimit');
-
 if(input){
  input.value = goal || '';
 }
@@ -449,8 +487,6 @@ function renderCategories() {
     .join('');
 }
 
-let editingExpenseId = null;
-
 function saveExpense(){
 
 const expenseData = {
@@ -481,9 +517,7 @@ editingExpenseId = null;
 saveStorage();
 renderAll();
 
-document.getElementById('value').value='';
-document.getElementById('note').value='';
-document.getElementById('date').value='';
+clearFields();
 }
 
 function editExpense(id){
@@ -545,7 +579,7 @@ function renderHistory() {
           </p>
         </div>
 
-       <div class="flex gap-3">
+<div class="flex gap-3">
 
 <button onclick="editExpense(${exp.id})"
 class="text-slate-500 text-2xl">
@@ -685,3 +719,4 @@ renderAll();
 
 </body>
 </html>
+
